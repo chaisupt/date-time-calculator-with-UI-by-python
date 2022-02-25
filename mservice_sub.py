@@ -18,6 +18,7 @@ import select
 from urllib.request import urlopen
 from datetime import timedelta
 
+
 def curr_time_service() :
     # get current longitude latitude
     g = geocoder.ip('me')
@@ -118,15 +119,11 @@ def check_commandfile():
         command_file.close()
         doit()
 
-i = 0
+
+print("service is running please press control+c to quit system")
 while True:
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print ("date/time microservice is running Press Enter to stop it!")
-    print (i)
-    check_commandfile()
-    if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-        # line = raw_input()
-        print("thanks for using date/time service")
-        print("the microservice was closed")
+    try:
+        check_commandfile()
+    except KeyboardInterrupt:
+        print(" \nthe service was closed thank you for using time service")
         break
-    i += 1

@@ -1,7 +1,12 @@
-from mservice import *
+# from mservice import *
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox
+import string
+import os
+import time
+from datetime import timedelta
+from datetime import datetime
 # geocoder
 # pytz
 # tzwhere
@@ -78,9 +83,137 @@ def submit_func():
     else :
         confirmemail()
 
+def date_time_return():
+    commanding_word="req"
+    fs=open("command_dtz.txt","w")
+    fs.write(commanding_word)
+    fs.close()
+    time.sleep(4)
+    fs=open("dtz_res.csv","r")
+    reading=fs.readline()
+    reading=fs.readline()
+    fs.close()
+    reading=reading.replace("\n","")
+    string_group=reading.split(",")
+    s_date=string_group[0]
+    # s_date=str(s_date)
+    s_time=string_group[1]
+    # s_time=str(s_time)
+    # s_year=s_date[:4]
+    # s_year=int(s_year)
+    # s_month=s_date[5:]
+    # s_month=s_month[:2]
+    # s_month=int(s_month)
+    # s_day=s_date[8:]
+    # s_day=int(s_day)
+    # s_hr=s_time[:2]
+    # s_hr=int(s_hr)
+    # s_min=s_time[3:]
+    # s_min=s_min[:2]
+    # s_min=int(s_min)
+    # s_sec=s_time[6:]
+    # s_sec=int(s_sec)
+    # date_result=datetime(s_year,s_month,s_day,s_hr,s_min,s_sec)
+    s_tz=string_group[2]
+    # return date_result,s_tz
+    return s_date,s_time,s_tz
+    
+
+def current_loc_time():    
+    s_date,s_time,s_tz=date_time_return()
+    et_wd_rstime.delete(0,"end")
+    et_wd_rstime.insert(0,s_time)
+    et_wd_rsdate.delete(0,"end")
+    et_wd_rsdate.insert(0,s_date)
+    et_wd_rstz.delete(0,"end")
+    et_wd_rstz.insert(0,"UTC"+s_tz)
 
 
+def wd_reset_clock(h1,m1,s1,d1,z1):
+    #hr min sec
+    h1=int(h1)
+    m1=int(m1)
+    s1=int(s1)
+    #year
+    ye1=d1[:4]
+    ye1=int(ye1)
+    #month
+    mt1=d1[5:]
+    mt1=mt1[:2]
+    mt1=int(mt1)
+    #day
+    dy1=d1[8:]
+    dy1=int(dy1)
+    current_time=datetime(ye1,mt1,dy1,h1,m1,s1)
+    #checkzone
+    z1=int(z1)
+    negat=False
+    dif_min=0
+    if(z1<0):
+        negat=True
+        z1=z1*(-1)
+    if(z1%100==30 or z1%100==45):
+        dif_min=z1%100
+        z1=z1/100
+    
+    #main calculation part
+    if negat is True:
+        current_time=current_time+timedelta(hours=z1)
+        if dif_min != 0 :
+            current_time=current_time+timedelta(minutes=dif_min)
+    else :
+        current_time=current_time-timedelta(hours=z1)
+        if dif_min != 0:
+            current_time=current_time-timedelta(minutes=dif_min)
+    
+    return current_time
+    
+def time2zone(std_time,tz_hr,tz_min,dsaving1,dsaving2):
+    negat=False
+    if(tz_hr<0):
+        negat=True
+        tz_hr=tz_hr*(-1)
+    if dsaving1 == "yes":
+        std_time=std_time-timedelta(hours=1)
+    #main coverter
+    if negat is True:
+        std_time=std_time-timedelta(hours=tz_hr)
+        if tz_min != 0:
+            std_time=std_time-timedelta(minutes=tz_min)
+    else:
+        std_time=std_time+timedelta(hours=tz_hr)
+        if tz_min != 0:
+            std_time=std_time+timedelta(minutes=tz_min)
+    if dsaving2 == "yes":
+        std_time=std_time+timedelta(hours=1)
+    
+    return std_time
 
+def wd_search_command():
+    s_date,s_time,s_tz=date_time_return()
+    #hr min sec
+    hr=s_time[:2]
+    minute=s_time[3:]
+    minute=minute[:2]
+    sec=s_time[6:]
+    result_time=wd_reset_clock(hr,minute,sec,s_date,s_tz)
+    wanted_timezone=cm_adv.get()
+    print(wanted_timezone)
+    wanted_timezone=wanted_timezone[:10]
+    wanted_timezone=wanted_timezone[4:]
+    tz_hr=wanted_timezone[:3]
+    tz_hr=int(tz_hr)
+    tz_min=wanted_timezone[4:]
+    tz_min=int(tz_min)
+    result_time=time2zone(result_time,tz_hr,tz_min,"no","no")
+    et_wd_rstime.delete(0,"end")
+    et_wd_rstime.insert(0,str(result_time.time()))
+    et_wd_rsdate.delete(0,"end")
+    et_wd_rsdate.insert(0,str(result_time.date()))
+    et_wd_rstz.delete(0,"end")
+    dummytz="UTC"+str(tz_hr)
+    et_wd_rstz.insert(0,dummytz)
+    
 
 
 #main cal
@@ -178,20 +311,23 @@ adv_input=StringVar()
 cm_adv=ttk.Combobox(root_wd,textvariable=adv_input,width=45)
 cm_adv["values"]=("(UTC-12:00) International Date Line West","(UTC-11:00) Coordinated Universal Time-11","(UTC-10:00) Hawaii","(UTC-09:00) Alaska","(UTC-08:00) Baja California","(UTC-08:00) Pacific Time (US and Canada)","(UTC-07:00) Chihuahua, La Paz, Mazatlan","(UTC-07:00) Arizona","(UTC-07:00) Mountain Time (US and Canada)","(UTC-06:00) Central America","(UTC-06:00) Central Time (US and Canada)","(UTC-06:00) Saskatchewan","(UTC-06:00) Guadalajara, Mexico City, Monterey","(UTC-05:00) Bogota, Lima, Quito","(UTC-05:00) Indiana (East)","(UTC-05:00) Eastern Time (US and Canada)","(UTC-04:30) Caracas","(UTC-04:00) Atlantic Time (Canada)","(UTC-04:00) Asuncion","(UTC-04:00) Georgetown, La Paz, Manaus, San Juan","(UTC-04:00) Cuiaba","(UTC-04:00) Santiago","(UTC-03:30) Newfoundland","(UTC-03:00) Brasilia","(UTC-03:00) Greenland","(UTC-03:00) Cayenne, Fortaleza","(UTC-03:00) Buenos Aires","(UTC-03:00) Montevideo","(UTC-02:00) Coordinated Universal Time-2","(UTC-01:00) Cape Verde","(UTC-01:00) Azores","(UTC+00:00) Casablanca","(UTC+00:00) Monrovia, Reykjavik","(UTC+00:00) Dublin, Edinburgh, Lisbon, London","(UTC+00:00) Coordinated Universal Time","(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna","(UTC+01:00) Brussels, Copenhagen, Madrid, Paris","(UTC+01:00) West Central Africa","(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague","(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb","(UTC+01:00) Windhoek","(UTC+02:00) Athens, Bucharest, Istanbul","(UTC+02:00) Helsinki, Kiev, Riga, Sofia, Tallinn, Vilnius","(UTC+02:00) Cairo","(UTC+02:00) Damascus","(UTC+02:00) Amman","(UTC+02:00) Harare, Pretoria","(UTC+02:00) Jerusalem","(UTC+02:00) Beirut","(UTC+03:00) Baghdad","(UTC+03:00) Minsk","(UTC+03:00) Kuwait, Riyadh","(UTC+03:00) Nairobi","(UTC+03:30) Tehran","(UTC+04:00) Moscow, St. Petersburg, Volgograd","(UTC+04:00) Tbilisi","(UTC+04:00) Yerevan","(UTC+04:00) Abu Dhabi, Muscat","(UTC+04:00) Baku","(UTC+04:00) Port Louis","(UTC+04:30) Kabul","(UTC+05:00) Tashkent","(UTC+05:00) Islamabad, Karachi","(UTC+05:30) Sri Jayewardenepura Kotte","(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi","(UTC+05:45) Kathmandu","(UTC+06:00) Astana","(UTC+06:00) Dhaka","(UTC+06:00) Yekaterinburg","(UTC+06:30) Yangon","(UTC+07:00) Bangkok, Hanoi, Jakarta","(UTC+07:00) Novosibirsk","(UTC+08:00) Krasnoyarsk","(UTC+08:00) Ulaanbaatar","(UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi","(UTC+08:00) Perth","(UTC+08:00) Kuala Lumpur, Singapore","(UTC+08:00) Taipei","(UTC+09:00) Irkutsk","(UTC+09:00) Seoul Osaka Sapporo Tokyo","(UTC+09:30) Darwin","(UTC+09:30) Adelaide","(UTC+10:00) Hobart Yakutsk Brisbane Guam","(UTC+10:00) Canberra, Melbourne, Sydney","(UTC+11:00) Vladivostok","(UTC+11:00) Solomon Islands, New Caledonia","(UTC+12:00) Coordinated Universal Time+12","(UTC+12:00) Fiji, Marshall Islands Magadan Auckland Wellington","(UTC+13:00) Nuku'alofa Samoa")
 cm_adv.grid(row=6,column=0)
-bt_wd_adsearch=Button(root_wd,text="search").grid(row=7,column=0)
+bt_wd_adsearch=Button(root_wd,text="search",command=wd_search_command).grid(row=7,column=0)
 lb_wd_sp2=Label(root_wd,text=" ",fg="black",bg="white").grid(row=8,column=0)
-bt_wd_curloc=Button(root_wd,text="current location time").grid(row=9)
+bt_wd_curloc=Button(root_wd,text="current location time",command=current_loc_time).grid(row=9)
 lb_wd_sp3=Label(root_wd,text=" ",fg="black",bg="white").grid(row=10,column=0)
 lb_wd_rshead=Label(root_wd,text="Result",fg="black",bg="white",font=("Arial",14)).grid(row=11)
 lb_wd_rstime=Label(root_wd,text="time",fg="black",bg="white").grid(row=12)
 wd_rstime=StringVar()
-et_wd_rstime=Entry(root_wd,textvariable=wd_rstime,width=10).grid(row=13)
+et_wd_rstime=Entry(root_wd,textvariable=wd_rstime,width=10)
+et_wd_rstime.grid(row=13)
 lb_wd_rsdate=Label(root_wd,text="date",fg="black",bg="white").grid(row=14)
 wd_rsdate=StringVar()
-et_wd_rsdate=Entry(root_wd,textvariable=wd_rsdate,width=10).grid(row=15)
+et_wd_rsdate=Entry(root_wd,textvariable=wd_rsdate,width=10)
+et_wd_rsdate.grid(row=15)
 lb_wd_rstz=Label(root_wd,text="timezone",fg="black",bg="white").grid(row=16)
 wd_rstz=StringVar()
-et_wd_rstz=Entry(root_wd,textvariable=wd_rstz,width=10).grid(row=17)
+et_wd_rstz=Entry(root_wd,textvariable=wd_rstz,width=10)
+et_wd_rstz.grid(row=17)
 lb_wd_sp4=Label(root_wd,text=" ",fg="black",bg="white").grid(row=18,column=0)
 
 #end line
