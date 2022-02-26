@@ -67,28 +67,14 @@ def confirmemail():
     elif input_email_io=="yes" and input_email=="":
         tkinter.messagebox.showerror("Error: email confirmation","Sorry! the result email cannot be sent")
 
-def submit_func():
-    from_input_time=cal_input_time.get()
-    from_input_date=cal_input_date.get()
-    from_input_timezone=cal_input_tz.get()
-    from_input_daytime=cal_input_daytime.get()
-    to_input_timezone=cal_output_tz.get()
-    to_input_daytime=cal_output_daytime.get()
-    input_email_io=cal_email.get()
-    input_email=cal_input_email.get()
 
-
-    if from_input_time=="" or from_input_date=="" or from_input_timezone=="" or from_input_daytime=="" or to_input_timezone=="" or to_input_daytime==""or input_email_io=="" :
-        tkinter.messagebox.showerror("Error: not enough input","Your input is not enough for the calculation")
-    else :
-        confirmemail()
 
 def date_time_return():
     commanding_word="req"
     fs=open("command_dtz.txt","w")
     fs.write(commanding_word)
     fs.close()
-    time.sleep(4)
+    time.sleep(6)
     fs=open("dtz_res.csv","r")
     reading=fs.readline()
     reading=fs.readline()
@@ -141,7 +127,7 @@ def wd_reset_clock(h1,m1,s1,d1,z1):
     mt1=d1[5:]
     mt1=mt1[:2]
     mt1=int(mt1)
-    #day
+    #day yyyy-mm-dd
     dy1=d1[8:]
     dy1=int(dy1)
     current_time=datetime(ye1,mt1,dy1,h1,m1,s1)
@@ -213,7 +199,78 @@ def wd_search_command():
     et_wd_rstz.delete(0,"end")
     dummytz="UTC"+str(tz_hr)
     et_wd_rstz.insert(0,dummytz)
+
+def sendmailservice(email_str,content):
+    commanding_word="req_mail"
+    fs=open("command_dtz.txt","w")
+    fs.write(commanding_word)
+    fs.write("\n")
+    fs.write(email_str)
+    fs.write("\n")
+    fs.write(content)
+    fs.close()
+    time.sleep(1)
+    fs=open("dtz_res.csv","r")
+    reading=fs.readline()
+    reading=fs.readline()
+    reading=reading.replace("\n","")
+    fs.close()
+    if reading=="Request succesful":
+        tkinter.messagebox.showinfo("email confirmation","the result has been sent!")
+    else:
+        tkinter.messagebox.showerror("Error: email confirmation","Sorry! the result email cannot be sent")
+
+
+
+
+def submit_func():
+    from_input_time=cal_input_time.get()
+    from_input_date=cal_input_date.get()
+    from_input_timezone=cal_input_tz.get()
+    from_input_daytime=cal_input_daytime.get()
+    to_input_timezone=cal_output_tz.get()
+    to_input_daytime=cal_output_daytime.get()
+    input_email_io=cal_email.get()
+    input_email=cal_input_email.get()
+
+    #if for error
+    if from_input_time=="" or from_input_date=="" or from_input_timezone=="" or from_input_daytime=="" or to_input_timezone=="" or to_input_daytime==""or input_email_io=="" :
+        tkinter.messagebox.showerror("Error: not enough input","Your input is not enough for the calculation")
     
+    #in case everything look right
+    else :
+        # confirmemail()
+        secondxd=0
+        hrxd=from_input_time[:2]
+        minxd=from_input_time[-2:]
+        tzxd=from_input_timezone[:10]
+        tzxd=tzxd[4:]
+        tzhr=tzxd[:3]
+        tzmin=tzxd[4:]
+        if int(tzmin) != 0:
+            tzxd=str(tzhr)+str(tzmin)
+        else:
+            tzxd=str(tzhr)
+        tzxd=int(tzxd)
+        timeresult=wd_reset_clock(hrxd,minxd,secondxd,from_input_date,tzxd)
+        tzxd=to_input_timezone[:10]
+        tzxd=tzxd[4:]
+        tzhr=tzxd[:3]
+        tzhr=int(tzhr)
+        tzmin=tzxd[4:]
+        tzmin=int(tzmin)
+        timeresult=time2zone(timeresult,tzhr,tzmin,from_input_daytime,to_input_daytime)
+        et_cal_rs_time.delete(0,"end")
+        timestr=str(timeresult.time())
+        timestr=timestr[:5]
+        et_cal_rs_time.insert(0,timestr)
+        et_cal_rs_date.delete(0,"end")
+        et_cal_rs_date.insert(0,str(timeresult.date()))
+        send_output="time: "+timestr+"  ,  date: "+str(timeresult.date())
+        if input_email_io=="yes":
+            sendmailservice(input_email,send_output)
+
+
 
 
 #main cal
@@ -272,10 +329,12 @@ lb_cal_sp1=Label(root_cal,text=" ",fg="black",bg="white").grid(row=12,column=0)
 lb_cal_rs=Label(root_cal,text="Result",fg="black",bg="white",font=("Arial",14)).grid(row=13,sticky=W)
 lb_cal_rs_time=Label(root_cal,text="time in 24hr (XX:XX): ",fg="black",bg="white").grid(row=14,sticky=W)
 cal_rs_time=StringVar()
-et_cal_rs_time=Entry(root_cal,textvariable=cal_rs_time,width=10).grid(row=14,column=1,sticky=W)
+et_cal_rs_time=Entry(root_cal,textvariable=cal_rs_time,width=10)
+et_cal_rs_time.grid(row=14,column=1,sticky=W)
 lb_cal_rs_date=Label(root_cal,text="date (YYYY/MM/DD): ",fg="black",bg="white").grid(row=15,sticky=W)
 cal_rs_date=StringVar()
-et_cal_rs_date=Entry(root_cal,textvariable=cal_rs_date,width=15).grid(row=15,column=1,sticky=W)
+et_cal_rs_date=Entry(root_cal,textvariable=cal_rs_date,width=15)
+et_cal_rs_date.grid(row=15,column=1,sticky=W)
 lb_cal_sp2=Label(root_cal,text=" ",fg="black",bg="white").grid(row=16,column=0)
 
 

@@ -42,6 +42,15 @@ def curr_time_service() :
     # print(mydt)
     timezoneint=int(mydt[:3])
     dif_min=int(mydt[-2:])
+    str_hr_tz=str(timezoneint)
+    str_min_tz=str(dif_min)
+    str_thetz=""
+    if dif_min ==0:
+        str_thetz=str_hr_tz
+    elif dif_min == 45 or dif_min == 30 :
+        str_thetz=str_hr_tz+str_min_tz
+    
+
     #show the timezone by datetime
     # print(datetime.now(timezone))
     # dict_result={}
@@ -91,7 +100,8 @@ def curr_time_service() :
     dict_result={}
     dict_result['date']=str(current_time.date())
     dict_result['time']=str(current_time.time())
-    dict_result['timezone']=str(datetime.now(timezone).tzname())     
+    # dict_result['timezone']=str(datetime.now(timezone).tzname())     
+    dict_result['timezone']=str_thetz
     # print(dict_result)
     return dict_result
 
