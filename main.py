@@ -42,6 +42,56 @@ def lastup():
 
     wd_up.mainloop()
 
+def cmd_citi():
+    raw_input=et_citi.get()
+    raw_input=raw_input.split(" ")
+    for i in range(len(raw_input)):
+        raw_input[i]=raw_input[i].capitalize()
+    raw_input="_".join(raw_input)
+    main_input="$"+raw_input
+    # print(main_input)
+    fs=open("grabdata-service.txt","w")
+    fs.write(main_input)
+    fs.close()
+    time.sleep(4)
+    fs=open("grabdata-service.txt","r")
+    reading=fs.readline()
+    fs.close()
+    reading=reading.replace("\n","")
+    if reading=="<!DOCT":
+        main_output="This city name not found in the list"
+        et_citi_result.delete(0,"end")
+        et_citi_result.insert(0,main_output)
+    else:
+        main_output="UTC"+reading
+        et_citi_result.delete(0,"end")
+        et_citi_result.insert(0,main_output)
+
+    
+    
+
+def cityWindow():
+    wd_citi=Tk()
+    wd_citi.title("City Search")
+    wd_citi.configure(bg="white")
+
+    lb_citi=Label(wd_citi,text="Enter Capital City name").pack()
+    global citi_input
+    citi_input=StringVar()
+    global et_citi
+    et_citi=Entry(wd_citi,width=25,textvariable=citi_input)
+    et_citi.pack()
+    bt_citi=Button(wd_citi,text="search",command=cmd_citi).pack()
+    lb_citi_space=Label(wd_citi,text=" ").pack()
+    citi_output=StringVar()
+    lb_citi_result=Label(wd_citi,text="result").pack()
+    global et_citi_result
+    et_citi_result=Entry(wd_citi,width=25,textvariable=citi_output)
+    et_citi_result.pack()
+
+
+    wd_citi.mainloop()
+
 def helpWindow():
     wd_help=Tk()
     wd_help.title("Help page")
@@ -348,6 +398,7 @@ menu_wd.add_command(label="help",command=helpWindow)
 menu_wd.add_command(label="exit",command=exit_wd)
 #pseudo menu for mac
 # bt_wd_history=Button(root_wd,text="History").grid(row=19,column=0)
+bt_wd_checkciti=Button(root_wd,text="check city offset",command=cityWindow).grid(row=19,column=0)
 bt_wd_lastup=Button(root_wd,text="last update info",command=lastup).grid(row=20,column=0)
 bt_wd_help=Button(root_wd,text="help",command=helpWindow).grid(row=21,column=0)
 bt_wd_exit=Button(root_wd,text="exit",command=exit_wd).grid(row=22,column=0)
