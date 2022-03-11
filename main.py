@@ -16,6 +16,9 @@ from datetime import datetime
 # my_d=curr_time_service()
 # print(my_d)
 
+#make history
+history_list=[]
+
 #main cal window setup
 root_cal=Tk()
 root_cal.title("Clocksys.Calculator")
@@ -75,18 +78,18 @@ def cityWindow():
     wd_citi.title("City Search")
     wd_citi.configure(bg="white")
 
-    lb_citi=Label(wd_citi,text="Enter Capital City name").pack()
+    lb_citi=Label(wd_citi,text="Enter Capital City name",bg="white",fg="black").pack()
     global citi_input
     citi_input=StringVar()
     global et_citi
-    et_citi=Entry(wd_citi,width=25,textvariable=citi_input)
+    et_citi=Entry(wd_citi,bg="white",fg="black",width=25,textvariable=citi_input)
     et_citi.pack()
-    bt_citi=Button(wd_citi,text="search",command=cmd_citi).pack()
-    lb_citi_space=Label(wd_citi,text=" ").pack()
+    bt_citi=Button(wd_citi,fg="black",bg="white",text="search",command=cmd_citi).pack()
+    lb_citi_space=Label(wd_citi,text=" ",fg="black",bg="white").pack()
     citi_output=StringVar()
-    lb_citi_result=Label(wd_citi,text="result").pack()
+    lb_citi_result=Label(wd_citi,text="result",fg="black",bg="white").pack()
     global et_citi_result
-    et_citi_result=Entry(wd_citi,width=25,textvariable=citi_output)
+    et_citi_result=Entry(wd_citi,fg="black",bg="white",width=25,textvariable=citi_output)
     et_citi_result.pack()
 
 
@@ -259,7 +262,7 @@ def sendmailservice(email_str,content):
     fs.write("\n")
     fs.write(content)
     fs.close()
-    time.sleep(1)
+    time.sleep(3)
     fs=open("dtz_res.csv","r")
     reading=fs.readline()
     reading=fs.readline()
@@ -289,37 +292,80 @@ def submit_func():
     
     #in case everything look right
     else :
-        # confirmemail()
-        secondxd=0
-        hrxd=from_input_time[:2]
-        minxd=from_input_time[-2:]
-        tzxd=from_input_timezone[:10]
-        tzxd=tzxd[4:]
-        tzhr=tzxd[:3]
-        tzmin=tzxd[4:]
-        if int(tzmin) != 0:
-            tzxd=str(tzhr)+str(tzmin)
+        try:
+            # confirmemail()
+            secondxd=0
+            hrxd=from_input_time[:2]
+            minxd=from_input_time[-2:]
+            tzxd=from_input_timezone[:10]
+            tzxd=tzxd[4:]
+            tzhr=tzxd[:3]
+            tzmin=tzxd[4:]
+            if int(tzmin) != 0:
+                tzxd=str(tzhr)+str(tzmin)
+            else:
+                tzxd=str(tzhr)
+            tzxd=int(tzxd)
+            timeresult=wd_reset_clock(hrxd,minxd,secondxd,from_input_date,tzxd)
+            tzxd=to_input_timezone[:10]
+            tzxd=tzxd[4:]
+            tzhr=tzxd[:3]
+            tzhr=int(tzhr)
+            tzmin=tzxd[4:]
+            tzmin=int(tzmin)
+            timeresult=time2zone(timeresult,tzhr,tzmin,from_input_daytime,to_input_daytime)
+            et_cal_rs_time.delete(0,"end")
+            timestr=str(timeresult.time())
+            timestr=timestr[:5]
+            et_cal_rs_time.insert(0,timestr)
+            et_cal_rs_date.delete(0,"end")
+            et_cal_rs_date.insert(0,str(timeresult.date()))
+            send_output="time: "+timestr+"  ,  date: "+str(timeresult.date())
+            if input_email_io=="yes":
+                sendmailservice(input_email,send_output)
+        except:
+            #if there is some error happen
+            tkinter.messagebox.showwarning("Invalid input please try again")
         else:
-            tzxd=str(tzhr)
-        tzxd=int(tzxd)
-        timeresult=wd_reset_clock(hrxd,minxd,secondxd,from_input_date,tzxd)
-        tzxd=to_input_timezone[:10]
-        tzxd=tzxd[4:]
-        tzhr=tzxd[:3]
-        tzhr=int(tzhr)
-        tzmin=tzxd[4:]
-        tzmin=int(tzmin)
-        timeresult=time2zone(timeresult,tzhr,tzmin,from_input_daytime,to_input_daytime)
-        et_cal_rs_time.delete(0,"end")
-        timestr=str(timeresult.time())
-        timestr=timestr[:5]
-        et_cal_rs_time.insert(0,timestr)
-        et_cal_rs_date.delete(0,"end")
-        et_cal_rs_date.insert(0,str(timeresult.date()))
-        send_output="time: "+timestr+"  ,  date: "+str(timeresult.date())
-        if input_email_io=="yes":
-            sendmailservice(input_email,send_output)
+            #if there isn't error then correct it to history
+            atime={"time_in":"time-from: "+from_input_time,"date_in":"date-from: "+from_input_date,"dt_in":"daytime-from: "+from_input_daytime,"tz_in":"timezone-from: "+from_input_timezone,"tz_out":"timezone-to: "+to_input_timezone,"dt_out":"date-to: "+to_input_daytime,"output":"result is "+send_output}
+            global history_list
+            history_list.append(atime)
 
+def historyWindow():
+    global history_list
+    hist=Tk()
+    hist.title("calculation history")
+    hist.configure(bg="white")
+    hist.geometry("500x500")
+    sb=Scrollbar(hist)
+    sb.pack(side = RIGHT, fill = Y)
+    hist_main_lb=Label(hist,text="History",font=("Arial",18)).pack()
+    hist_ma_lb=Label(hist,text="(lowest=newest)",font=("Arial",11)).pack()
+    t=Text(hist,wrap=NONE,width=500,height=500,yscrollcommand = sb.set)
+    for x in history_list:
+        # inf_lb1=Label(hist,text=x["time_in"]).pack()
+        # inf_lb2=Label(hist,text=x["date_in"]).pack()
+        # inf_lb3=Label(hist,text=x["dt_in"]).pack()
+        # inf_lb4=Label(hist,text=x["tz_in"]).pack()
+        # inf_lb5=Label(hist,text=x["tz_out"]).pack()
+        # inf_lb6=Label(hist,text=x["dt_out"]).pack()
+        # inf_lb7=Label(hist,text=x["output"]).pack()
+        # inf_sp=Label(hist,text=" ").pack()
+
+        t.insert(END,x["time_in"]+"\n")
+        t.insert(END,x["date_in"]+"\n")
+        t.insert(END,x["dt_in"]+"\n")
+        t.insert(END,x["tz_in"]+"\n")
+        t.insert(END,x["tz_out"]+"\n")
+        t.insert(END,x["dt_out"]+"\n")
+        t.insert(END,x["output"]+"\n")
+        t.insert(END,"\n")
+
+    t.pack(side=TOP, fill=X)
+    sb.config(command=t.yview)
+
+    hist.mainloop()
 
 
 
@@ -331,7 +377,7 @@ menu_cal.add_command(label="help",command=helpWindow)
 menu_cal.add_command(label="exit",command=exit_cal)
 
 #pseudo menu for mac
-bt_cal_history=Button(root_cal,text="History").grid(row=17,column=0)
+bt_cal_history=Button(root_cal,text="History",command=historyWindow).grid(row=17,column=0)
 bt_cal_lastup=Button(root_cal,text="last update info",command=lastup).grid(row=18,column=0)
 bt_cal_help=Button(root_cal,text="help",command=helpWindow).grid(row=19,column=0)
 bt_cal_exit=Button(root_cal,text="exit",command=exit_cal).grid(row=20,column=0)
