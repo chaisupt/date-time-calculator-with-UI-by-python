@@ -7,6 +7,7 @@ import os
 import time
 from datetime import timedelta
 from datetime import datetime
+from PIL import Image
 # geocoder
 # pytz
 # tzwhere
@@ -22,7 +23,7 @@ history_list=[]
 #main cal window setup
 root_cal=Tk()
 root_cal.title("Clocksys.Calculator")
-# root_cal.geometry("500x500")
+root_cal.geometry("600x550+0+0")
 root_cal.configure(bg="white")
 menu_cal=Menu()
 root_cal.config(menu=menu_cal)
@@ -30,21 +31,39 @@ root_cal.config(menu=menu_cal)
 #main world window setup
 root_wd=Tk()
 root_wd.title("Clocksys.World_Clock")
-# root_wd.geometry("500x500")
+root_wd.geometry("460x500+600+0")
 root_wd.configure(bg="white")
 menu_wd=Menu()
 root_wd.config(menu=menu_wd)
 
 #button function
+
+
+
+def insertwarning():
+    wd_err=Tk()
+    wd_err.title("submition error")
+    wd_err.configure(bg="white")
+    wd_err.eval('tk::PlaceWindow . center')
+    def exit_err():
+        wd_err.destroy()
+        
+    lb_error_content=Label(wd_err,text="Error: the input format is incorrect").pack()
+    bt_error_exit=Button(wd_err,text="OK",command=exit_err,width=10).pack()
+
+    wd_err.mainloop()
+
 def lastup():
     wd_up=Tk()
     wd_up.title("Last update")
     wd_up.configure(bg="white")
 
-    lb_update_content=Label(wd_up,text="this is version 0.0 there is no any update yet",font=("Arial",14)).pack()
-
+    lb_update_content=Label(wd_up,text="this is the first full release version 1.0. Therefore,there is not any update yet",font=("Arial",14)).pack()
+    lb_update_content2=Label(wd_up,text="Thank you for choosing Clocksys").pack()
     wd_up.mainloop()
 
+#city name serch button command
+#longer than 10 line because it the same step job
 def cmd_citi():
     raw_input=et_citi.get()
     raw_input=raw_input.split(" ")
@@ -95,16 +114,13 @@ def cityWindow():
 
     wd_citi.mainloop()
 
-def helpWindow():
-    wd_help=Tk()
-    wd_help.title("Help page")
-    wd_help.geometry("1200x700")
-    wd_help.configure(bg="white")
-    
-    lb_helpcontent=Label(wd_help,text="The help instruction picture will be here" , font=("Arial",60)).pack()
+def helpWindowWD():
+    im = Image.open(r"help_wd.png")
+    im.show() 
 
-    wd_help.mainloop()
-
+def helpWindowCAL():
+    im = Image.open(r"help_cal.png")
+    im.show() 
 
 def exit_cal():
     root_cal.destroy()
@@ -135,26 +151,8 @@ def date_time_return():
     reading=reading.replace("\n","")
     string_group=reading.split(",")
     s_date=string_group[0]
-    # s_date=str(s_date)
     s_time=string_group[1]
-    # s_time=str(s_time)
-    # s_year=s_date[:4]
-    # s_year=int(s_year)
-    # s_month=s_date[5:]
-    # s_month=s_month[:2]
-    # s_month=int(s_month)
-    # s_day=s_date[8:]
-    # s_day=int(s_day)
-    # s_hr=s_time[:2]
-    # s_hr=int(s_hr)
-    # s_min=s_time[3:]
-    # s_min=s_min[:2]
-    # s_min=int(s_min)
-    # s_sec=s_time[6:]
-    # s_sec=int(s_sec)
-    # date_result=datetime(s_year,s_month,s_day,s_hr,s_min,s_sec)
     s_tz=string_group[2]
-    # return date_result,s_tz
     return s_date,s_time,s_tz
     
 
@@ -228,6 +226,7 @@ def time2zone(std_time,tz_hr,tz_min,dsaving1,dsaving2):
     
     return std_time
 
+#more than 10 line because most of it is declaration
 def wd_search_command():
     s_date,s_time,s_tz=date_time_return()
     #hr min sec
@@ -275,7 +274,7 @@ def sendmailservice(email_str,content):
 
 
 
-
+#This function is very long because it almost do every thing in clock calculation software
 def submit_func():
     from_input_time=cal_input_time.get()
     from_input_date=cal_input_date.get()
@@ -325,7 +324,8 @@ def submit_func():
                 sendmailservice(input_email,send_output)
         except:
             #if there is some error happen
-            tkinter.messagebox.showwarning("Invalid input please try again")
+            # tkinter.messagebox.showwarning("Invalid input please try again")
+            insertwarning()
         else:
             #if there isn't error then correct it to history
             atime={"time_in":"time-from: "+from_input_time,"date_in":"date-from: "+from_input_date,"dt_in":"daytime-from: "+from_input_daytime,"tz_in":"timezone-from: "+from_input_timezone,"tz_out":"timezone-to: "+to_input_timezone,"dt_out":"date-to: "+to_input_daytime,"output":"result is "+send_output}
@@ -343,16 +343,8 @@ def historyWindow():
     hist_main_lb=Label(hist,text="History",font=("Arial",18)).pack()
     hist_ma_lb=Label(hist,text="(lowest=newest)",font=("Arial",11)).pack()
     t=Text(hist,wrap=NONE,width=500,height=500,yscrollcommand = sb.set)
-    for x in history_list:
-        # inf_lb1=Label(hist,text=x["time_in"]).pack()
-        # inf_lb2=Label(hist,text=x["date_in"]).pack()
-        # inf_lb3=Label(hist,text=x["dt_in"]).pack()
-        # inf_lb4=Label(hist,text=x["tz_in"]).pack()
-        # inf_lb5=Label(hist,text=x["tz_out"]).pack()
-        # inf_lb6=Label(hist,text=x["dt_out"]).pack()
-        # inf_lb7=Label(hist,text=x["output"]).pack()
-        # inf_sp=Label(hist,text=" ").pack()
 
+    for x in history_list:
         t.insert(END,x["time_in"]+"\n")
         t.insert(END,x["date_in"]+"\n")
         t.insert(END,x["dt_in"]+"\n")
@@ -373,14 +365,14 @@ def historyWindow():
 # menu
 menu_cal.add_command(label="History")
 menu_cal.add_command(label="last update info",command=lastup)
-menu_cal.add_command(label="help",command=helpWindow)
+menu_cal.add_command(label="help",command=helpWindowCAL)
 menu_cal.add_command(label="exit",command=exit_cal)
 
 #pseudo menu for mac
-bt_cal_history=Button(root_cal,text="History",command=historyWindow).grid(row=17,column=0)
-bt_cal_lastup=Button(root_cal,text="last update info",command=lastup).grid(row=18,column=0)
-bt_cal_help=Button(root_cal,text="help",command=helpWindow).grid(row=19,column=0)
-bt_cal_exit=Button(root_cal,text="exit",command=exit_cal).grid(row=20,column=0)
+bt_cal_history=Button(root_cal,width=13,text="History",command=historyWindow).grid(row=17,column=0)
+bt_cal_lastup=Button(root_cal,width=13,text="last update info",command=lastup).grid(row=18,column=0)
+bt_cal_help=Button(root_cal,width=13,text="help",command=helpWindowCAL).grid(row=19,column=0)
+bt_cal_exit=Button(root_cal,width=13,text="exit",command=exit_cal).grid(row=20,column=0)
 
 #content
 lb_cal_main=Label(root_cal ,text="Clock Calculator",fg="black",bg="white",font=("Arial",18)).grid(row=0,column=0)
@@ -440,28 +432,17 @@ lb_cal_sp2=Label(root_cal,text=" ",fg="black",bg="white").grid(row=16,column=0)
 # menu
 # menu_wd.add_command(label="History")
 menu_wd.add_command(label="last update info",command=lastup)
-menu_wd.add_command(label="help",command=helpWindow)
+menu_wd.add_command(label="help",command=helpWindowWD)
 menu_wd.add_command(label="exit",command=exit_wd)
 #pseudo menu for mac
 # bt_wd_history=Button(root_wd,text="History").grid(row=19,column=0)
-bt_wd_checkciti=Button(root_wd,text="check city offset",command=cityWindow).grid(row=19,column=0)
-bt_wd_lastup=Button(root_wd,text="last update info",command=lastup).grid(row=20,column=0)
-bt_wd_help=Button(root_wd,text="help",command=helpWindow).grid(row=21,column=0)
-bt_wd_exit=Button(root_wd,text="exit",command=exit_wd).grid(row=22,column=0)
+bt_wd_checkciti=Button(root_wd,width=30,text="check city offset",command=cityWindow).grid(row=19,column=0)
+bt_wd_lastup=Button(root_wd,width=30,text="last update info",command=lastup).grid(row=20,column=0)
+bt_wd_help=Button(root_wd,width=30,text="help",command=helpWindowWD).grid(row=21,column=0)
+bt_wd_exit=Button(root_wd,width=30,text="exit",command=exit_wd).grid(row=22,column=0)
 
 # content
 lb_wd_main=Label(root_wd ,text="World Clock",fg="black",bg="white",font=("Arial",18)).grid(row=0,column=0)
-# lb_wd_city_title=Label(root_wd,text="Search by location (please type in city/continent format such as Bangkok/Asia or use the current ip location",fg="black",bg="white").grid(row=1,column=0)
-# city_input=StringVar()
-# lb_wd_city_entry=Entry(root_wd,textvariable=city_input,width=50).grid(row=2,column=0)
-# bt_wd_searchcity=Button(root_wd,text="search").grid(row=3,column=0)
-# lb_wd_sp1=Label(root_wd,text=" ",fg="black",bg="white").grid(row=4,column=0)
-# lb_wd_tz_title=Label(root_wd,text="Search by Standard time zone (format UTC+XX or UTC-XX)",fg="black",bg="white").grid(row=5,column=0)
-# tz_input=StringVar()
-# cm_tz=ttk.Combobox(root_wd,textvariable=tz_input)
-# cm_tz["values"]=("UTC-12:00","UTC-11:00","UTC-10:00","UTC-09:00","UTC-08:00","UTC-07:00","UTC-06:00","UTC-05:00","UTC-04:30","UTC-04:00","UTC-03:30","UTC-03:00","UTC-02:00","UTC-01:00","UTC+00:00","UTC+01:00","UTC+02:00","UTC+03:00","UTC+03:30","UTC+04:00","UTC+04:30","UTC+05:00","UTC+05:30","UTC+05:45","UTC+06:00","UTC+06:30","UTC+07:00","UTC+08:00","UTC+09:00","UTC+09:30","UTC+10:00","UTC+11:00","UTC+12:00","UTC+13:00")
-# cm_tz.grid(row=6,column=0)
-
 lb_wd_adsearch_title=Label(root_wd,text="Please choose city/timezone then click search or click current location time",fg="black",bg="white").grid(row=5,column=0)
 adv_input=StringVar()
 cm_adv=ttk.Combobox(root_wd,textvariable=adv_input,width=45)
