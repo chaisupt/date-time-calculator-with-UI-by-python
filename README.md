@@ -43,7 +43,11 @@ step0 : install the requirement on the first section of readme file
 step1 : open 4 shell such as powershell or terminal
 
 step2: in each tab run the following command
+
 Tab1>> python3 mservice.py
+
 Tab2>> python3 GrabData.py
+
 Tab3>> email_service.py
+
 Tab4>> main.py
